@@ -61,6 +61,19 @@ class Turn(Plan):
       s.turn(step)
       yield self.forDuration(dt)
 
+class Autonomous( Plan ):
+  """
+  Plan simulates robot turning over a period of time.
+
+  (MODIFY THIS FOR YOUR ROBOT)
+  """
+  def __init__(self,app,simIX,sensor):
+    Plan.__init__(self,app)
+    self.simIX = simIX
+    self.sensor = sensor
+
+  def behavior(self):
+    s = self.simIX
 
 class RobotSimulatorApp( JoyApp ):
   """Concrete class RobotSimulatorApp <<singleton>>
@@ -101,6 +114,7 @@ class RobotSimulatorApp( JoyApp ):
     self.robSim = SimpleRobotSim(fn=None)
     self.moveP = MoveForward(self,self.robSim)
     self.turnP = Turn(self,self.robSim)
+    self.autoP = Autonomous(self,self.robSim,self.sensor)
 
   def showSensors( self ):
     """
@@ -141,24 +155,22 @@ class RobotSimulatorApp( JoyApp ):
       self.emitTagMessage()
     #### MODIFY FROM HERE ON ----------------------------------------
     if evt.type == KEYDOWN:
-        if evt.key == K_a and not self.autoP.isRunning():
-            return progress("(say) Automatic mode activating")
-        if evt.key == K_UP and not self.moveP.isRunning():
-            self.moveP.dist = 100.0
-            self.moveP.start()
-            return progress("(say) Translate forward")
-        elif evt.key == K_DOWN and not self.moveP.isRunning():
-            self.moveP.dist = -100.0
-            self.moveP.start()
-            return progress("(say) Translate back")
-        if evt.key == K_LEFT and not self.turnP.isRunning():
-            self.moveP.dist = 100.0j
-            self.moveP.start()
-            return progress("(say) Translate left")
-        if evt.key == K_RIGHT and not self.turnP.isRunning():
-            self.moveP.dist = -100.0j
-            self.moveP.start()
-            return progress("(say) Translate right")
+      if evt.key == K_UP and not self.moveP.isRunning():
+        self.moveP.dist = 100.0
+        self.moveP.start()
+        return progress("(say) Translate forward")
+      elif evt.key == K_DOWN and not self.moveP.isRunning():
+        self.moveP.dist = -100.0
+        self.moveP.start()
+        return progress("(say) Translate back")
+      if evt.key == K_LEFT and not self.turnP.isRunning():
+        self.moveP.dist = 100.0j
+        self.moveP.start()
+        return progress("(say) Translate left")
+      if evt.key == K_RIGHT and not self.turnP.isRunning():
+        self.moveP.dist = -100.0j
+        self.moveP.start()
+        return progress("(say) Translate right")
     ### DO NOT MODIFY -----------------------------------------------
       else:# Use superclass to show any other events
         return JoyApp.onEvent(self,evt)
