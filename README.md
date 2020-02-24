@@ -2,7 +2,7 @@
 
 Contributers|email
 ------------ | -------------
-Madi Devore | devore@umich.edu
+Madi DeVore | devore@umich.edu
 Christian Soto | cbsoto@umich.edu
 David Marsh | djmarsh@umich.edu
 Matt Maurer | mlmaurer@umich.edu
