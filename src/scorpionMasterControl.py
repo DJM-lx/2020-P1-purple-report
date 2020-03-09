@@ -19,13 +19,15 @@ from pylab import randn,dot,mean,exp,newaxis
 
 if '-r' in sys.argv:
   print('INITIALIZING PHYSICAL ROBOT')
+  REAL = True
   from scorpionReIX import ScorpionRobotSim, RobotSimInterface
 
 else:
   print('INITIALIZING SIMULATED ROBOT')
-  # FILL IN THE REST FOR SIMULATED ROBOT
+  REAL = False
+  from scorpionSimIX import ScorpionRobotSim, RobotSimInterface
 
-from scorpionPlans import Move
+from scorpionPlans import Move, Autonomous
 # IMPORT MORE PLANS WHEN MORE ARE WRITTEN
 
 class RobotSimulatorApp( JoyApp ):
@@ -45,6 +47,7 @@ class RobotSimulatorApp( JoyApp ):
       )
     self.srvAddr = (wphAddr, APRIL_DATA_PORT)
     # ADD pre-startup initialization here, if you need it
+    self.REAL = REAL
 
   def onStart( self ):
     """
@@ -66,6 +69,7 @@ class RobotSimulatorApp( JoyApp ):
     ### MODIFY FROM HERE ------------------------------------------
     self.robSim = ScorpionRobotSim(fn=None, app=self)
     self.moveP = Move(self,self.robSim)
+    self.autoP = Autonomous() # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
 
   def showSensors( self ):
     """
@@ -150,12 +154,12 @@ if __name__=="__main__":
 
   if '-r' in sys.argv:
       sys.argv.remove('-r')
-      modules = {'count':4, 'names':{0x0C:'CCWS', 0x4D: 'CCWM', 0x08: 'CWS', 0x14: 'CWM'}, 'fillMissing':True,'required':[0x0c,0x4d,0x08,0x14]}
+      modules = {'count':4, 'names':{0x04:'CCWS', 0xD0: 'CCWM', 0x03: 'CWS', 0x0C: 'CWM'}, 'fillMissing':True,'required':[0x04,0xD0,0x03,0x0C]}
   else:
       modules = None
 
   if len(sys.argv)>1:
       app=RobotSimulatorApp(wphAddr=sys.argv[1], cfg={'windowSize' : [160,120]})
   else:
-      app=RobotSimulatorApp(wphAddr=WAYPOINT_HOST, cfg={'windowSize' : [160,120]})
+      app=RobotSimulatorApp(wphAddr=WAYPOINT_HOST, robot=modules, cfg={'windowSize' : [160,120]})
   app.run()

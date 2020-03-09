@@ -109,19 +109,19 @@ class ScorpionRobotSim( RobotSimInterface ):
         self.initSpeed = 0
 
         self.app = app
-        self.modules = [app.modules.at.CCWS, app.modules.at.CCWM, app.modules.at.CWS, app.modules.at.CWM]
+        self.modules = [app.robot.at.CCWS, app.robot.at.CCWM, app.robot.at.CWS, app.robot.at.CWM]
 
         self.idxCCWS = 0
         self.idxCCWM = 1
         self.idxCWS = 2
         self.idxCWM = 3
 
-        self.modules[self.idxCCWS].set_mode('servo')
+        #self.modules[self.idxCCWS].set_mode('servo')
         self.modules[self.idxCCWS].set_pos(self.initPos)
         self.modules[self.idxCCWM].set_mode('motor')
         self.modules[self.idxCCWM].set_speed(self.initSpeed)
 
-        self.modules[self.idxCWS].set_mode('servo')
+        #self.modules[self.idxCWS].set_mode('servo')
         self.modules[self.idxCWS].set_pos(self.initPos)
         self.modules[self.idxCWM].set_mode('motor')
         self.modules[self.idxCWM].set_speed(self.initSpeed)
