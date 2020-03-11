@@ -74,6 +74,7 @@ class RobotSimulatorApp( JoyApp ):
     self.autoP = Autonomous(self, self.robSim, self.sensor, self.moveP) # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
     self.autoOn = False
     self.nowUpdate = False
+    self.good = False
 
   def showSensors( self ):
     """
@@ -111,6 +112,15 @@ class RobotSimulatorApp( JoyApp ):
       self.dist = 0
       self.localNS = True
       return
+    elif not self.good and self.way:
+      self.lastway = self.way[0]
+      self.nextway = self.way[1]
+      print (str(self.way))
+      print (str(self.lastway))
+      print(str(self.nextway))
+      self.x1, self.y1 = self.lastway
+      self.x2, self.y2 = self.nextway
+      self.good = True
     if self.nowUpdate and self.way:
       self.lastway = self.way[0]
       self.nextway = self.way[1]
@@ -119,6 +129,7 @@ class RobotSimulatorApp( JoyApp ):
       print(str(self.nextway))
       self.x1, self.y1 = self.lastway
       self.x2, self.y2 = self.nextway
+    
 
     stepval = 1
     x1 = self.x1 
@@ -126,30 +137,33 @@ class RobotSimulatorApp( JoyApp ):
     y1 = self.y1
     y2 = self.y2
     self.dist = 0
-    # if x2 - x1 > 0:
-    #   temp = (x2 - x1) % 50
-    #   self.x1 += temp
-    #   self.dist = temp 
-    #   self.localNS = False
-    #   print("XXXXXXXXXXXXX")
-    # elif x2 - x1 < -0:
-    #   temp = (x2 - x1) % 50
-    #   self.x1 -= temp
-    #   self.dist = temp
-    #   self.localNS = False
-    #   print("-----------------XXXXXXXXXXXXX")
+    if x2 - x1 > 0:
+      temp = (x2 - x1) % 50
+      self.x1 += temp
+      self.dist = -1 * temp 
+      self.localNS = False
+      print("XXXXXXXXXXXXX")
+      print("x1 " ,self.x1 ," y2 ", self.x2)
+      return
+    elif x2 - x1 < -0:
+      temp = (x2 - x1) % 50
+      self.x1 -= temp
+      self.dist = temp
+      self.localNS = False
+      print("-----------------XXXXXXXXXXXXX")
+      return
     if y2 - y1 > 0:
       temp = (y2 - y1) % 50
       self.y1 += temp
-      self.dist = (temp) 
+      self.dist =  (temp) 
       self.localNS = True
       print("YYYYYYYYYYYYYYYYYY")
       print("y1 " ,self.y1 ," y2 ", self.y2)
       print("dist" , self.dist)
-    elif y2 - y1 < -0:
+    elif y2 - y1 < 0:
       temp = (y2 - y1) % 50
       self.y1 -= temp
-      self.dist = (temp ) 
+      self.dist = -1 * (temp ) 
       self.localNS = True
       print("---------YYYYYYYYYYYY")
     else:
@@ -171,12 +185,14 @@ class RobotSimulatorApp( JoyApp ):
       self.emitTagMessage()
     #### MODIFY FROM HERE ON ----------------------------------------
     if evt.type == KEYDOWN:
-      if evt.key == K_a and not self.moveP.isRunning():
-        self.calcdist()
-        self.moveP.dist = self.dist * 4.5
-        self.moveP.localNS = self.localNS
-        self.moveP.speed = self.moveP.dist/ 1
-        self.moveP.start()
+      if evt.key == K_a and not self.autoP.isRunning():
+        self.autoP.start()
+        # self.calcdist()
+        # self.moveP.dist = self.dist * 5
+        # self.moveP.localNS = self.localNS
+        # if self.dist != 0:
+        #   self.moveP.speed = self.moveP.dist/ 5
+        #   self.moveP.start()
         return progress("(say) Autonomous")
       elif evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
@@ -206,9 +222,9 @@ class RobotSimulatorApp( JoyApp ):
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
         return progress("(say) Turn right")
-    # elif self.autoOn is True and not self.autoP.isRunning():
-    #     exit()
-    #     self.autoP.start()
+    # # elif self.autoOn is True and not self.autoP.isRunning():
+    # #     exit()
+    # #     self.autoP.start()
     ### DO NOT MODIFY -----------------------------------------------
     else:# Use superclass to show any other events
         return JoyApp.onEvent(self,evt)
