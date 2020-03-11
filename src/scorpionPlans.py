@@ -9,10 +9,10 @@ class Move( Plan ):
         self.REAL = app.REAL
 
         self.localNS = True
-        self.angle = -1000
+        self.angle = -8000
         self.speed = 0
         self.dist = 0
-        self.dur = 3
+        self.dur = 2
         self.N = 20
 
     def behavior( self ):
@@ -33,10 +33,12 @@ class Move( Plan ):
 
 class Autonomous( Plan ):
 
-    def __init__( self ):
+    def __init__( self , app , simIX ,  sensor , moveP):
         
+        Plan.__init__( self, app )
         pass
+            
 
     def behavior( self ):
-
+        
         pass

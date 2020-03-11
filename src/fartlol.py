@@ -1,3 +1,94 @@
+from joy.plans import Plan
+
+class Move( Plan ):
+
+    def __init__( self , app , simIX ):
+
+        Plan.__init__( self, app )
+        self.simIX = simIX
+        self.REAL = app.REAL
+
+        self.localNS = True
+        self.angle = -8000
+        self.speed = 0
+        self.dist = 0
+        self.dur = 2
+        self.N = 20
+
+    def behavior( self ):
+        
+        if self.REAL == True:
+
+            yield self.simIX.move( self.localNS , self.angle , self.speed , self.dist )
+
+        else:
+
+            step = self.dist / float(self.N)
+            dt = self.dur / float(self.N)
+
+            for k in range(self.N):
+
+                self.simIX.move(self.localNS , self.angle , self.speed , step)
+                yield self.forDuration(dt)
+
+class Autonomous( Plan ):
+
+    def __init__( self , app , simIX ,  sensor , moveP):
+        
+        Plan.__init__( self , app )
+        self.simIX = simIX
+        self.REAL = app.REAL
+        self.sensorEmpty = 0
+        self.sensor = sensor
+        self.moveP = moveP
+        self.way = self.sensor.lastWaypoints[-1]
+        if not self.way:
+            self.sensorEmpty = 1
+        else:
+            print(self.way)
+            self.curr = self.way[0]
+            self.currx , self.curry = self.curr
+            
+
+    def behavior( self ):
+        if self.sensorEmpty == 1 and self.sensor.lastWaypoints[-1]:
+            self.sensorEmpty = 0
+            self.sensor = self.sensor
+            self.curr = (self.sensor.lastWaypoints[-1])[0]
+            self.currx, self.curry = self.curr
+            self.next = (self.sensor.lastWaypoints[-1])[1]
+            self.nextx, self.nexty = self.next
+             
+        elif self.sensorEmpty == 1:
+            return
+        
+
+        self.dir = 0
+        if not self.sensor.lastWaypoints[-1] :
+            return
+        else:
+            if self.curr != (self.sensor.lastWaypoints[-1])[0]:
+                self.updatePos(self.sensor)
+            if self.currx != self.nextx:
+                self.move = (self.nextx - self.currx) % 20
+                self.currx += self.move
+                self.dir = 1
+            elif self.curry != self.nexty:
+                self.move = (self.nexty - self.curry) % 20
+                self.curry += self.move
+                self.dir = 2
+            if dir is 1:
+                self.moveP.localNS = True
+        self.moveP.start()
+            
+    
+
+    def updatePos(self, sensor):
+        self.curr = self.next
+        self.next = (sensor.lastWaypoints[-1])[1]
+        self.currx, self.curry = self.curr
+        self.nextx , self.nexty = self.next
+
 # file robotSimulator.py simulates a robot in an arena
 
 import sys
@@ -73,7 +164,6 @@ class RobotSimulatorApp( JoyApp ):
     self.moveP = Move(self,self.robSim)
     self.autoP = Autonomous(self, self.robSim, self.sensor, self.moveP) # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
     self.autoOn = False
-    self.nowUpdate = False
 
   def showSensors( self ):
     """
@@ -99,63 +189,6 @@ class RobotSimulatorApp( JoyApp ):
     msg = self.robSim.getTagMsg()
     # Send message to waypointServer "as if" we were tagStreamer
     self.sock.sendto(msg.encode("ascii"), self.srvAddr)
-  
-  def fakeauto(self):
-    pass
-
-  def calcdist( self ):
-    self.way = self.sensor.lastWaypoints[-1]
-    if not self.way:
-      self.way = self.sensor.lastWaypoints[-1]
-      self.nowUpdate = True
-      self.dist = 0
-      self.localNS = True
-      return
-    if self.nowUpdate and self.way:
-      self.lastway = self.way[0]
-      self.nextway = self.way[1]
-      print (str(self.way))
-      print (str(self.lastway))
-      print(str(self.nextway))
-      self.x1, self.y1 = self.lastway
-      self.x2, self.y2 = self.nextway
-
-    stepval = 1
-    x1 = self.x1 
-    x2 = self.x2
-    y1 = self.y1
-    y2 = self.y2
-    self.dist = 0
-    # if x2 - x1 > 0:
-    #   temp = (x2 - x1) % 50
-    #   self.x1 += temp
-    #   self.dist = temp 
-    #   self.localNS = False
-    #   print("XXXXXXXXXXXXX")
-    # elif x2 - x1 < -0:
-    #   temp = (x2 - x1) % 50
-    #   self.x1 -= temp
-    #   self.dist = temp
-    #   self.localNS = False
-    #   print("-----------------XXXXXXXXXXXXX")
-    if y2 - y1 > 0:
-      temp = (y2 - y1) % 50
-      self.y1 += temp
-      self.dist = (temp) 
-      self.localNS = True
-      print("YYYYYYYYYYYYYYYYYY")
-      print("y1 " ,self.y1 ," y2 ", self.y2)
-      print("dist" , self.dist)
-    elif y2 - y1 < -0:
-      temp = (y2 - y1) % 50
-      self.y1 -= temp
-      self.dist = (temp ) 
-      self.localNS = True
-      print("---------YYYYYYYYYYYY")
-    else:
-      self.dist = 0
-      self.localNS = True
-      print ("MOVING >>>>>><<<<<<<<<< X1 <<<<<<<<>>>>>>>> Y1 <<<<<<>>>>>>>")
 
   def onEvent( self, evt ):
     #### DO NOT MODIFY --------------------------------------------
@@ -171,14 +204,12 @@ class RobotSimulatorApp( JoyApp ):
       self.emitTagMessage()
     #### MODIFY FROM HERE ON ----------------------------------------
     if evt.type == KEYDOWN:
-      if evt.key == K_a and not self.moveP.isRunning():
-        self.calcdist()
-        self.moveP.dist = self.dist * 4.5
-        self.moveP.localNS = self.localNS
-        self.moveP.speed = self.moveP.dist/ 1
-        self.moveP.start()
+      if evt.key == K_a and not self.autoP.isRunning(): 
+        self.autoOn = True
+        self.autoP.start()
+        
         return progress("(say) Autonomous")
-      elif evt.key == K_UP and not self.moveP.isRunning():
+      if evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = -50.0
 
@@ -192,14 +223,14 @@ class RobotSimulatorApp( JoyApp ):
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
         return progress("(say) Move back")
-      elif evt.key == K_LEFT and not self.moveP.isRunning():
+      if evt.key == K_LEFT and not self.moveP.isRunning():
         self.moveP.localNS = False
         self.moveP.dist = -50.0
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
         return progress("(say) Turn left")
-      elif evt.key == K_RIGHT and not self.moveP.isRunning():
+      if evt.key == K_RIGHT and not self.moveP.isRunning():
         self.moveP.localNS = False
         self.moveP.dist = 50.0
 

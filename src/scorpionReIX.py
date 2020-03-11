@@ -128,7 +128,7 @@ class ScorpionRobotSim( RobotSimInterface ):
 
     def move(self, localNS, angle, speed, dist):
       if localNS == True:
-        self.modules[self.idxCWS].set_pos(angle)
+        self.modules[self.idxCWS].set_pos(-angle)
         self.modules[self.idxCWM].set_speed(speed)
 
         yield self.app.moveP.forDuration(dist/speed)
