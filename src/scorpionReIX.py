@@ -126,7 +126,7 @@ class ScorpionRobotSim( RobotSimInterface ):
         self.modules[self.idxCWM].set_mode('motor')
         self.modules[self.idxCWM].set_speed(self.initSpeed)
 
-    def move(self, localNS, angle, speed, dist):
+    def move(self, localNS, angle, speed, dist , partP):
       if localNS == True:
         self.modules[self.idxCWS].set_pos(-angle)
         self.modules[self.idxCWM].set_speed(speed)

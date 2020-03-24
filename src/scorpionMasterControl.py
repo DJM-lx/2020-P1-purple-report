@@ -30,6 +30,7 @@ else:
   from scorpionSimIX import ScorpionRobotSim, RobotSimInterface
 
 from scorpionPlans import Move, Autonomous
+from particleFilter import ParticleFilter
 # IMPORT MORE PLANS WHEN MORE ARE WRITTEN
 
 class RobotSimulatorApp( JoyApp ):
@@ -72,6 +73,7 @@ class RobotSimulatorApp( JoyApp ):
     self.robSim = ScorpionRobotSim(fn=None, app=self)
     self.moveP = Move(self,self.robSim)
     self.autoP = Autonomous(self, self.robSim, self.sensor, self.moveP) # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
+    self.partP = ParticleFilter(self, self.sensor, self.moveP)
     self.autoOn = False
     self.nowUpdate = False
     self.good = False
@@ -197,6 +199,7 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = -50.0
+        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -204,6 +207,7 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_DOWN and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = 50.0
+        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -211,6 +215,7 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_LEFT and not self.moveP.isRunning():
         self.moveP.localNS = False
         self.moveP.dist = -50.0
+        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -218,6 +223,7 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_RIGHT and not self.moveP.isRunning():
         self.moveP.localNS = False
         self.moveP.dist = 50.0
+        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()

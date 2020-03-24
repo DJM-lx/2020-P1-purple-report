@@ -14,12 +14,13 @@ class Move( Plan ):
         self.dist = 0
         self.dur = 2
         self.N = 20
+        self.partP = 0
 
     def behavior( self ):
         
         if self.REAL == True:
 
-            yield self.simIX.move( self.localNS , self.angle , self.speed , self.dist )
+            yield self.simIX.move( self.localNS , self.angle , self.speed , self.dist , self.partP )
 
         else:
 
@@ -28,7 +29,7 @@ class Move( Plan ):
 
             for k in range(self.N):
 
-                self.simIX.move(self.localNS , self.angle , self.speed , step)
+                self.simIX.move(self.localNS , self.angle , self.speed , step , self.partP )
                 yield self.forDuration(dt)
 
 class Autonomous( Plan ):
