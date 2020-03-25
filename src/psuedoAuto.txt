@@ -1,4 +1,5 @@
 Drive to first waypoint
+
 Auto operation:
   moveX(1)
   nextMove(checkDist2Line,'x')
@@ -6,13 +7,17 @@ Auto operation:
 
 Functions:
 moveX(a):
-          a*10cm*REAL(nextWayDir)
+          a*10cm*REAL(heading)
 moveY(a):
-          a*10cm*IMAG(nextWayDir)
+          a*10cm*IMAG(heading)
 
-nextWayDir:
-            inputs: lastWaypoints
-            outputs: a complex unit vector pointing from the last waypoint to the previous waypoint
+heading:
+            inputs: lastWaypoints, average of the 2 current sensor readings =sense
+            outputs: if sense < threshold
+              a complex unit vector pointing from the last waypoint to the previous waypoint
+            else
+              a complex unit vector perpendicular to the line between the previous waypoint and the next waypoint
+
 
 checkDist2Line:
             inputs: tuple containing last Sensor data, current sensor data
@@ -20,7 +25,7 @@ checkDist2Line:
 
 nextmove(a,lastMove):
           if a is not a tuple
-            scan
+            scan until you get sensor readings use scan()
           elseif(a==true,true)
             if(lastMove=='x')
               moveY(1)
@@ -40,5 +45,6 @@ nextmove(a,lastMove):
               moveX(-2)
               nextmove(checkDist2Line,'x')
 
-
-            
+scan :
+    inputs: arena bounds
+    scan until you find sensor readings without leaving the arena, then use nextMove to find the line again
