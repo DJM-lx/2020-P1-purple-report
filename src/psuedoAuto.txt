@@ -1,0 +1,44 @@
+Drive to first waypoint
+Auto operation:
+  moveX(1)
+  nextMove(checkDist2Line,'x')
+
+
+Functions:
+moveX(a):
+          a*10cm*REAL(nextWayDir)
+moveY(a):
+          a*10cm*IMAG(nextWayDir)
+
+nextWayDir:
+            inputs: lastWaypoints
+            outputs: a complex unit vector pointing from the last waypoint to the previous waypoint
+
+checkDist2Line:
+            inputs: tuple containing last Sensor data, current sensor data
+            outputs: returns a boolean tuple corresponding to each sensor.  If true, the sensor value is >= to the previous sensor data (closer to the line.) Return False instead of a tuple if the current sensor data is empty
+
+nextmove(a,lastMove):
+          if a is not a tuple
+            scan
+          elseif(a==true,true)
+            if(lastMove=='x')
+              moveY(1)
+              nextmove(checkDist2Line,'y')
+            else
+              moveX(1)
+              nextmove(checkDist2Line,'x')
+          elseif(a==true,False or False true)
+            The robot is on the line, move the direction that keeps the robot on the line
+            nextMove(checkDist2Line,'the direction you moved')
+          else
+            The robot is moving away from the line; backtrack:
+            if(lastMove=='x')
+              moveY(-2)
+              nextmove(checkDist2Line,'y')
+            else
+              moveX(-2)
+              nextmove(checkDist2Line,'x')
+
+
+            
