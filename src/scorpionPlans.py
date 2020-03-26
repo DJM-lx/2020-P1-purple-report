@@ -46,6 +46,7 @@ class Autonomous( Plan ):
 	self.threshold = 5
 	self.prevsensor = sensor
 	self.sensor = sensor
+    self.coord=
 
 
 
@@ -58,9 +59,8 @@ class Autonomous( Plan ):
 
 		#end moves robot
 		#keep track of distance/sensor values
-                self.movesim('x')
-
-		self.nextmove()
+        self.movesim('x')
+        self.nextmove('x')
 
      def movesim(self,direction):
 	#check if a works as complex
@@ -108,8 +108,33 @@ class Autonomous( Plan ):
       def checkDist2Line(self):
 	self.ts, self.lastf, self.lastb = self.prevsensor.lastSensor
 		if self.lastf and self.f:
-			if self.lastf > self.f:
-				self.boolf = True
+			self.boolf = self.lastf < self.f
 		if self.lastb and self.b:
-			if self.lastb > self.b:
-				self.boolb = True
+			self.boolb = self.lastb < self.b
+
+    def nextMove(self,lastMove)
+        checkDist2Line
+        self.a=1
+        if self.sensor <=0     #change implementation of sensor to make this work:
+            self.scan() #add scan as a function
+
+        elif self.boolb and self.boolf
+            if lastMove == 'x'
+                self.movesim('y')
+                self.nextMove('y')
+            else
+                self.movesim('x')
+                self.nextMove('x')
+        elif self.boolb or self.boolf
+            if lastMove == 'x'
+                self.movesim('y')
+                self.movesim('x')
+                self.nextMove('x')
+            else
+                    self.movesim('x')
+                    self.movesim('y')
+                    self.nextMove('y')
+        else # we are moving away from the line.  Backtrack.
+            self.a=-2
+            if lastMove == 'x'
+                self.movesim()
