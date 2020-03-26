@@ -34,7 +34,7 @@ class Move( Plan ):
 
 class Autonomous( Plan ):
 
-    def __init__( self , app , simIX ,  sensor , moveP):
+    def __init__( self , app , simIX ,  sensor , moveP,firstWaypoint):
 
         Plan.__init__( self, app )
         self.moveP = moveP
@@ -46,34 +46,30 @@ class Autonomous( Plan ):
 	self.threshold = 5
 	self.prevsensor = sensor
 	self.sensor = sensor
-    self.coord= sensor.lastWaypoints[-1]
+    self.coord=firstWaypoint;
+    self.missedSensorCount=0
+    self.missedSensorThreshold=4
 
 
 
     def behavior( self, sensor):
-		#check diff in old and new sensor values
 
-
-
-
-
-		#end moves robot
-		#keep track of distance/sensor values
         self.movesim('x')
         self.nextmove('x')
 
      def movesim(self,direction):
 	#check if a works as complex
-	if(direction='x')
+	if direction ==('x' or 'X'):
 		self.moveP.speed =  (a * self.moveP.dist * real(self.heading()))/self.moveP.dur
+        #we need to do the local NS thing here.  How does that work?
         self.coord[0] += (a * self.moveP.dist * real(self.heading()))
-
-	else
-	self.moveP.speed =  (a * self.moveP.dist * imag(self.heading()))/self.moveP.dur
-    self.coord[1] += (a * self.moveP.dist * imag(self.heading()))
+	elif direction == ('y' or 'Y'):
+    	self.moveP.speed =  (a * self.moveP.dist * imag(self.heading()))/self.moveP.dur
+        #we need to do the local NS thing here.  How does that work?
+        self.coord[1] += (a * self.moveP.dist * imag(self.heading()))
 	self.lastsensor = sensor
 	self.moveP.start()
-        yield self.moveP.forDuration(self.moveP.dur)
+    yield self.moveP.forDuration(self.moveP.dur)
 
 	self.way = sensor.lastWaypoints[-1]
 	self.x ,self.y = self.way[0]
@@ -81,29 +77,35 @@ class Autonomous( Plan ):
 	self.ts, self.f , self.b = sensor.lastSensor
 
      def heading(self):
-	self.prevsensor = sensor
+	self.prevsensor_x = sensor
 	self.way = sensor.lastWaypoints[-1]
 	self.x ,self.y = self.way[0]
 	self.nextx , self.nexty = self.way[1]
-	self.ts, self.f , self.b = sensor.lastSensor
-	if self.f and self.b:
+	self.ts, self.f_temp , self.b_temp = self.sensor.lastSensor
+	if self.f_temp and self.b_temp:
+        self.f=self.f_temp
+        self.b=self.b_temp
 		self.sense = (self.f + self.b) / 2.0
-	elif self.f:
+        self.missedSensorCount=0
+
+	elif self.f_temp:
+        self.f=self.f_temp
 		self.sense = self.f
-		self.doscan = True
-	elif self.b:
-		self.doscan = True
+
+	elif self.b_temp:
+        self.b=self.b_temp
 		self.sense = self.b
-	else:
-		self.sense = None
-		self.doscan = True
-		#Do Something Else/ add
-	head = (self.nextx - self.x) + ((self.nexty - self.y) * j)
+    else:
+        self.missedSensorCount += 1
+    if self.missedSensorCount > self.missedSensorThreshold:
+        return 1
+
+	head = (self.nextx - self.x) + ((self.nexty - self.y)j)
 	head_n= head / abs(head)
-	if (self.sense < threshold):
+	if (self.sense < threshold): #move parallel to the line
 
 		return head_n
-	else:
+	else: #move perpendicular to the line
 		return imag(head_n)+real(head_n)j
 
 
@@ -111,48 +113,51 @@ class Autonomous( Plan ):
 	self.ts, self.lastf, self.lastb = self.prevsensor.lastSensor
 		if self.lastf and self.f:
 			self.boolf = self.lastf < self.f
-		if self.lastb and self.b:
+		elif self.lastb and self.b:
 			self.boolb = self.lastb < self.b
 
     def nextMove(self,lastMove)
+
         checkDist2Line
         self.a=1
-        if self.sensor <=0     #change implementation of sensor to make this work:
+        if self.missedSensorCount < self.missedSensorThreshold:
             self.scan() #add scan as a function
 
-        elif self.boolb and self.boolf
-            if lastMove == 'x'
+        elif self.boolb and self.boolf:
+            if lastMove == 'x':
                 self.movesim('y')
                 self.nextMove('y')
-            else
+            else:
                 self.movesim('x')
                 self.nextMove('x')
-        elif self.boolb or self.boolf
-            if lastMove == 'x'
+        elif self.boolb or self.boolf:
+            if lastMove == 'x':
                 self.movesim('y')
                 self.movesim('x')
                 self.nextMove('x')
-            else
+            else:
                     self.movesim('x')
                     self.movesim('y')
                     self.nextMove('y')
-        else # we are moving away from the line.  Backtrack.
+        else: # we are moving away from the line.  Backtrack.
             self.a=-2
-            if lastMove == 'x'
-                self.movesim()
-
-
+            if lastMove=='x':
+                self.movesim('y')
+                self.nextMove('y')
+            else:
+                self.movesim('x')
+                self.movesim('x')
 
 
     def scan(self):
        self.a = -1
        if lastMove == 'x'
             if(((self.coord[0] + (self.a * self.moveP.dist * real(self.heading())) < self.lowerx) || (self.coord[0] + (self.a * self.moveP.dist * real(self.heading())) > self.upperx) )
-                self.a = 1 
+                self.a = 1
             self.movesim('x')
-        else  
+        else
             if(((self.coord[1] + (self.a * self.moveP.dist * imag(self.heading())) < self.lowery) || (self.coord[1] + (self.a * self.moveP.dist * imag(self.heading())) > self.uppery) )
-                self.a = 1 
+                self.a = 1
             self.movesim('y')
         checkDist2Line
         if self.sensor <= 0
