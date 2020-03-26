@@ -11,7 +11,7 @@ from robotSimIX import SimpleRobotSim,RobotSimInterface
 from joy import JoyApp, progress
 from joy.decl import *
 from joy.plans import Plan
-from waypointShared import WAYPOINT_HOST, APRIL_DATA_PORT
+from waypointShared import WAYPOINT_HOST, APRIL_DATA_PORT, ref 
 from socket import (
   socket, AF_INET,SOCK_DGRAM, IPPROTO_UDP, error as SocketError,
   )
@@ -77,6 +77,15 @@ class RobotSimulatorApp( JoyApp ):
     self.autoOn = False
     self.nowUpdate = False
     self.good = False
+    if ref[0,1] < ref[2,1] #26 is the bottom left tag
+        self.lowerx = ref[0,1]
+        self.upperx = ref[2,1]
+    else
+        self.upperx = ref[0,1]
+        self.lowerx = ref[2,1]
+    self.lowery = ref[0,0]
+    self.uppery = ref[5,0]
+        
 
   def showSensors( self ):
     """

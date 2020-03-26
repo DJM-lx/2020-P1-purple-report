@@ -46,7 +46,7 @@ class Autonomous( Plan ):
 	self.threshold = 5
 	self.prevsensor = sensor
 	self.sensor = sensor
-    self.coord=
+    self.coord= sensor.lastWaypoints[-1]
 
 
 
@@ -66,9 +66,11 @@ class Autonomous( Plan ):
 	#check if a works as complex
 	if(direction='x')
 		self.moveP.speed =  (a * self.moveP.dist * real(self.heading()))/self.moveP.dur
+        self.coord[0] += (a * self.moveP.dist * real(self.heading()))
 
 	else
 	self.moveP.speed =  (a * self.moveP.dist * imag(self.heading()))/self.moveP.dur
+    self.coord[1] += (a * self.moveP.dist * imag(self.heading()))
 	self.lastsensor = sensor
 	self.moveP.start()
         yield self.moveP.forDuration(self.moveP.dur)
@@ -138,3 +140,20 @@ class Autonomous( Plan ):
             self.a=-2
             if lastMove == 'x'
                 self.movesim()
+
+
+
+
+    def scan(self):
+       self.a = -1
+       if lastMove == 'x'
+            if(((self.coord[0] + (self.a * self.moveP.dist * real(self.heading())) < self.lowerx) || (self.coord[0] + (self.a * self.moveP.dist * real(self.heading())) > self.upperx) )
+                self.a = 1 
+            self.movesim('x')
+        else  
+            if(((self.coord[1] + (self.a * self.moveP.dist * imag(self.heading())) < self.lowery) || (self.coord[1] + (self.a * self.moveP.dist * imag(self.heading())) > self.uppery) )
+                self.a = 1 
+            self.movesim('y')
+        checkDist2Line
+        if self.sensor <= 0
+            self.scan()
