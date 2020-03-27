@@ -34,7 +34,7 @@ class Move( Plan ):
 
 class Autonomous( Plan ):
 
-    def __init__( self , app , simIX ,  sensor , moveP,firstWaypoint):
+    def __init__( self , app , simIX ,  sensor , moveP):
 
         Plan.__init__( self, app )
         self.moveP = moveP
@@ -46,13 +46,13 @@ class Autonomous( Plan ):
     	self.threshold = 5
     	self.prevsensor = sensor
     	self.sensor = sensor
-        self.coord=firstWaypoint;
+        self.coord=self.sensor.lastWaypoints[-1][0]
         self.missedSensorCount=0
         self.missedSensorThreshold=4
 
 
 
-    def behavior( self, sensor):
+    def behavior( self):
 
         self.movesim('x')
         self.nextmove('x')
