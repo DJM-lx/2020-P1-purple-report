@@ -77,10 +77,10 @@ class RobotSimulatorApp( JoyApp ):
     self.autoOn = False
     self.nowUpdate = False
     self.good = False
-    if ref[0,1] < ref[2,1] #26 is the bottom left tag
+    if ref[0,1] < ref[2,1]: #26 is the bottom left tag
         self.lowerx = ref[0,1]
         self.upperx = ref[2,1]
-    else
+    else:
         self.upperx = ref[0,1]
         self.lowerx = ref[2,1]
     self.lowery = ref[0,0]
