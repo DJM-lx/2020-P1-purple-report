@@ -2,7 +2,7 @@ from joy.plans import Plan
 
 class Move( Plan ):
 
-    def __init__( self , app , simIX ):
+    def __init__( self , app , simIX ,sensor):
 
         Plan.__init__( self, app )
         self.simIX = simIX
@@ -14,7 +14,9 @@ class Move( Plan ):
         self.dist = 0
         self.dur = 2
         self.N = 20
-        self.partP = 0
+        self.noWay=True
+        self.firstWay=0
+        self.sensor=sensor
 
     def behavior( self ):
 
@@ -23,19 +25,29 @@ class Move( Plan ):
             yield self.simIX.move( self.localNS , self.angle , self.speed , self.dist , self.partP )
 
         else:
-
+            if self.noWay and self.sensor.lastWaypoints != (0,[]):
+                self.firstWay=self.sensor.lastWaypoints[-1][0]
             step = self.dist / float(self.N)
             dt = self.dur / float(self.N)
 
             for k in range(self.N):
 
-                self.simIX.move(self.localNS , self.angle , self.speed , step , self.partP )
+                self.simIX.move(self.localNS , self.angle , self.speed)
                 yield self.forDuration(dt)
+
+    def getfirstWay( self ):
+        if self.firstWay == 0:
+            print('first waypoint not discovered')
+            return None
+        else:
+            return self.firstWay
+
+
 
 class Autonomous( Plan ):
 
     def __init__( self , app , simIX ,  sensor , moveP):
-        
+
         Plan.__init__( self, app )
         self.moveP = moveP
         self.moveP.real = 1
@@ -46,7 +58,7 @@ class Autonomous( Plan ):
         self.threshold = 5
         self.prevsensor = sensor
         self.sensor = sensor
-        self.coord=self.sensor.lastWaypoints[-1][0]
+        self.coord=0
         self.missedSensorCount=0
         self.missedSensorThreshold=4
 
@@ -69,7 +81,7 @@ class Autonomous( Plan ):
         self.lastsensor = self.sensor
         self.moveP.start()
         yield self.moveP.forDuration(self.moveP.dur)
-        
+
         self.way = self.sensor.lastWaypoints[-1]
         self.x ,self.y = self.way[0]
         self.nextx , self.nexty = self.way[1]
@@ -112,7 +124,7 @@ class Autonomous( Plan ):
             self.boolf = self.lastf < self.f
         elif self.lastb and self.b:
             self.boolb = self.lastb < self.b
-    
+
     def nextMove(self,lastMove):
 
         self.checkDist2Line()

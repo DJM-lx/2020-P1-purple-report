@@ -11,7 +11,7 @@ from robotSimIX import SimpleRobotSim,RobotSimInterface
 from joy import JoyApp, progress
 from joy.decl import *
 from joy.plans import Plan
-from waypointShared import WAYPOINT_HOST, APRIL_DATA_PORT, ref 
+from waypointShared import WAYPOINT_HOST, APRIL_DATA_PORT, ref
 from socket import (
   socket, AF_INET,SOCK_DGRAM, IPPROTO_UDP, error as SocketError,
   )
@@ -30,7 +30,6 @@ else:
   from scorpionSimIX import ScorpionRobotSim, RobotSimInterface
 
 from scorpionPlans import Move, Autonomous
-from particleFilter import ParticleFilter
 # IMPORT MORE PLANS WHEN MORE ARE WRITTEN
 
 class RobotSimulatorApp( JoyApp ):
@@ -71,9 +70,8 @@ class RobotSimulatorApp( JoyApp ):
     self.T0 = self.now
     ### MODIFY FROM HERE ------------------------------------------
     self.robSim = ScorpionRobotSim(fn=None, app=self)
-    self.moveP = Move(self,self.robSim)
+    self.moveP = Move(self,self.robSim,self.sensor)
     self.autoP = Autonomous(self, self.robSim, self.sensor, self.moveP) # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
-    self.partP = ParticleFilter(self, self.sensor, self.moveP)
     self.autoOn = False
     self.nowUpdate = False
     self.good = False
@@ -85,7 +83,7 @@ class RobotSimulatorApp( JoyApp ):
         self.lowerx = ref[2,1]
     self.lowery = ref[0,0]
     self.uppery = ref[5,0]
-        
+
 
   def showSensors( self ):
     """
@@ -111,7 +109,7 @@ class RobotSimulatorApp( JoyApp ):
     msg = self.robSim.getTagMsg()
     # Send message to waypointServer "as if" we were tagStreamer
     self.sock.sendto(msg.encode("ascii"), self.srvAddr)
-  
+
   def fakeauto(self):
     pass
 
@@ -140,10 +138,10 @@ class RobotSimulatorApp( JoyApp ):
       print(str(self.nextway))
       self.x1, self.y1 = self.lastway
       self.x2, self.y2 = self.nextway
-    
+
 
     stepval = 1
-    x1 = self.x1 
+    x1 = self.x1
     x2 = self.x2
     y1 = self.y1
     y2 = self.y2
@@ -151,7 +149,7 @@ class RobotSimulatorApp( JoyApp ):
     if x2 - x1 > 0:
       temp = (x2 - x1) % 50
       self.x1 += temp
-      self.dist = -1 * temp 
+      self.dist = -1 * temp
       self.localNS = False
       print("XXXXXXXXXXXXX")
       print("x1 " ,self.x1 ," y2 ", self.x2)
@@ -166,7 +164,7 @@ class RobotSimulatorApp( JoyApp ):
     if y2 - y1 > 0:
       temp = (y2 - y1) % 50
       self.y1 += temp
-      self.dist =  (temp) 
+      self.dist =  (temp)
       self.localNS = True
       print("YYYYYYYYYYYYYYYYYY")
       print("y1 " ,self.y1 ," y2 ", self.y2)
@@ -174,7 +172,7 @@ class RobotSimulatorApp( JoyApp ):
     elif y2 - y1 < 0:
       temp = (y2 - y1) % 50
       self.y1 -= temp
-      self.dist = -1 * (temp ) 
+      self.dist = -1 * (temp )
       self.localNS = True
       print("---------YYYYYYYYYYYY")
     else:
@@ -198,6 +196,7 @@ class RobotSimulatorApp( JoyApp ):
     if evt.type == KEYDOWN:
       if evt.key == K_a and not self.autoP.isRunning():
         self.autoP.start()
+        self.autoP.firstWay=self.moveP.getfirstWay()
         # self.calcdist()
         # self.moveP.dist = self.dist * 5
         # self.moveP.localNS = self.localNS
@@ -208,7 +207,6 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = -50.0
-        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -216,7 +214,6 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_DOWN and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = 50.0
-        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -224,7 +221,6 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_LEFT and not self.moveP.isRunning():
         self.moveP.localNS = False
         self.moveP.dist = -50.0
-        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -232,7 +228,6 @@ class RobotSimulatorApp( JoyApp ):
       elif evt.key == K_RIGHT and not self.moveP.isRunning():
         self.moveP.localNS = False
         self.moveP.dist = 50.0
-        self.moveP.partP = self.partP
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
@@ -259,7 +254,7 @@ if __name__=="__main__":
       modules = {'count':4, 'names':{0x04:'CCWS', 0x0C: 'CCWM', 0x10: 'CWS', 0xD0: 'CWM'}, 'fillMissing':True,'required':[0x04,0x0C,0x10,0xD0]}
   else:
       modules = None
-      
+
 
   if len(sys.argv)>ARG:
       app=RobotSimulatorApp(wphAddr=sys.argv[1], cfg={'windowSize' : [160,120]})
