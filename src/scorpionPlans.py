@@ -130,7 +130,7 @@ class Autonomous( Plan ):
         self.checkDist2Line()
         self.a=1
         if self.missedSensorCount < self.missedSensorThreshold:
-            self.scan() #add scan as a function
+            self.scan(lastMove) 
 
         elif self.boolb and self.boolf:
             if lastMove == 'x':
@@ -158,7 +158,7 @@ class Autonomous( Plan ):
                 self.movesim('x')
 
 
-    def scan(self):
+    def scan(self,lastMove):
         self.a = -1
         if lastMove == 'x':
             if(((self.coord[0] + (self.a * self.moveP.dist * real(self.heading())) < self.lowerx) or (self.coord[0] + (self.a * self.moveP.dist * real(self.heading())) > self.upperx))):
