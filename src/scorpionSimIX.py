@@ -154,15 +154,13 @@ class ScorpionRobotSim( RobotSimInterface ):
         self.pos = mean(tag)
         self.ang = 1+0j
 
-    def move(self, localNS, angle, speed, dist , partP):
+    def move(self, localNS, angle, speed, dist):
         if localNS == True:
           self.pos += self.ang * dist + randn()*self.dNoise*sqrt(abs(dist))
-          partP.update( dist )
 
         else:
           tempDist = dist*1j
           self.pos += self.ang * tempDist + randn()*self.dNoise*sqrt(abs(tempDist))
-          partP.update( tempDist )
 
     def refreshState(self):
         # Compute tag points relative to tag center, with 1st point on real axis

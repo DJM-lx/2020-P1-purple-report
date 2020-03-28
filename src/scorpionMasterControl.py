@@ -206,28 +206,28 @@ class RobotSimulatorApp( JoyApp ):
         return progress("(say) Autonomous")
       elif evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
-        self.moveP.dist = -50.0
+        self.moveP.dist = -4.0
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
         return progress("(say) Move forward")
       elif evt.key == K_DOWN and not self.moveP.isRunning():
         self.moveP.localNS = True
-        self.moveP.dist = 50.0
+        self.moveP.dist = 4.0
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
         return progress("(say) Move back")
       elif evt.key == K_LEFT and not self.moveP.isRunning():
         self.moveP.localNS = False
-        self.moveP.dist = -50.0
+        self.moveP.dist = -4.0
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
         return progress("(say) Turn left")
       elif evt.key == K_RIGHT and not self.moveP.isRunning():
         self.moveP.localNS = False
-        self.moveP.dist = 50.0
+        self.moveP.dist = 4.0
 
         self.moveP.speed = self.moveP.dist/self.moveP.dur
         self.moveP.start()
