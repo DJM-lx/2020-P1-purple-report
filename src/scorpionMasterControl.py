@@ -194,6 +194,7 @@ class RobotSimulatorApp( JoyApp ):
       self.emitTagMessage()
     #### MODIFY FROM HERE ON ----------------------------------------
     if evt.type == KEYDOWN:
+
       if evt.key == K_a and not self.autoP.isRunning():
         self.autoP.start()
         self.autoP.firstWay=self.moveP.getfirstWay()
@@ -204,6 +205,11 @@ class RobotSimulatorApp( JoyApp ):
         #   self.moveP.speed = self.moveP.dist/ 5
         #   self.moveP.start()
         return progress("(say) Autonomous")
+
+      elif evt.key == K_l :
+        self.autoP.moveAlong=False
+      elif evt.key == K_k :
+        self.autoP.moveAlong=True
       elif evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = -4.0
