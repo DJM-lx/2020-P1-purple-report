@@ -71,7 +71,7 @@ class RobotSimulatorApp( JoyApp ):
     ### MODIFY FROM HERE ------------------------------------------
     self.robSim = ScorpionRobotSim(fn=None, app=self)
     self.moveP = Move(self,self.robSim,self.sensor)
-    self.autoP = Autonomous(self, self.robSim, self.sensor, self.moveP) # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
+    self.autoP = Autonomous( self, self.robSim, self.sensor , self.moveP ) # NEED TO FILL WITH REQUIRED PARAMETERS AND CHANGE IN PLANS SCRIPT
     self.autoOn = False
     self.nowUpdate = False
     self.good = False
@@ -194,10 +194,8 @@ class RobotSimulatorApp( JoyApp ):
       self.emitTagMessage()
     #### MODIFY FROM HERE ON ----------------------------------------
     if evt.type == KEYDOWN:
-
       if evt.key == K_a and not self.autoP.isRunning():
         self.autoP.start()
-        self.autoP.firstWay=self.moveP.getfirstWay()
         # self.calcdist()
         # self.moveP.dist = self.dist * 5
         # self.moveP.localNS = self.localNS
@@ -205,11 +203,6 @@ class RobotSimulatorApp( JoyApp ):
         #   self.moveP.speed = self.moveP.dist/ 5
         #   self.moveP.start()
         return progress("(say) Autonomous")
-
-      elif evt.key == K_l :
-        self.autoP.moveAlong=False
-      elif evt.key == K_k :
-        self.autoP.moveAlong=True
       elif evt.key == K_UP and not self.moveP.isRunning():
         self.moveP.localNS = True
         self.moveP.dist = -4.0
