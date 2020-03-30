@@ -6,15 +6,12 @@ if 'pyckbot/hrb/' not in sys.path:
 
 from gzip import open as opengz
 from json import dumps as json_dumps
-from numpy import asfarray, dot, c_, newaxis, mean, exp, sum, sqrt, any, isnan
+from numpy import asfarray, dot, c_, mean, exp, sqrt, any, isnan, asarray
 from numpy.linalg import svd
 from numpy.random import randn
 from waypointShared import *
 
-from pdb import set_trace as DEBUG
-
-
-MSG_TEMPLATE = {
+DEFAULT_MSG_TEMPLATE = {
     0 : [[2016, 1070], [1993, 1091], [2022, 1115], [2044, 1093]],
     1 : [[1822, 1323], [1824, 1287], [1787, 1281], [1784, 1315]],
     2 : [[1795, 911], [1766, 894], [1749, 916], [1779, 933]],
@@ -28,7 +25,19 @@ MSG_TEMPLATE = {
     27 : [[2230, 697], [2230, 721], [2262, 727], [2260, 704]],
     28 : [[911, 1525], [952, 1523], [953, 1483], [913, 1486]],
     29 : [[1222, 542], [1193, 537], [1186, 558], [1216, 566]],
-  }
+}
+try:
+  from randArenaOutput import MSG_TEMPLATE, randSeed
+  print("### Using randomly generated arena from seed %d" % randSeed)
+except:
+  MSG_TEMPLATE = DEFAULT_MSG_TEMPLATE
+  print("### Using DEFAULT arena")
+
+# NOTE: must be AFTER randAreaOutput import
+from waypointShared import waypoints, corners, ROBOT_TAGID
+
+from pdb import set_trace as DEBUG
+
 
 def tags2list( dic ):
     """
@@ -100,6 +109,9 @@ class RobotSimInterface( object ):
     ### Initialize internal variables
     # Two points on the laser screen
     self.laserScreen = asfarray([[-1,-1],[1,-1]])
+    # Buffer for visualization requests
+    self.visArenaClear()
+    self.visRobotClear()
     # Cache for simulated TagStreamer messages
     self._msg = None
     # Output for simulated laser data
@@ -107,6 +119,56 @@ class RobotSimInterface( object ):
       self.out = None
     else:
       self.out = opengz(fn,"w")
+
+  def visArenaClear(self):
+      """
+      Reset / clear the arena visualization requests
+      """
+      self._lw = []
+
+  def visRobotClear(self):
+      """
+      Reset / clear the robot visualization requests
+      """
+      self._lr = []
+
+  def visArena(self,meth,*arg,**kw):
+      """
+      Add a visualization request to be plotted in the arena subplot
+      INPUT:
+        meth - str - axis method name
+        *arg,**kw - additional arguments as appropriate for the visualilzation method
+
+      NOTE: coordinates should be given in arena coordinates,
+        i.e. with respect to the true world frame used to give
+        the reference locations of the markers
+
+      Example:
+      >>> ix.visArenaClear()
+      >>> ix.visArena('plot',x=[10,20,20,10,10],y=[10,10,20,20,10],c='r') # plot a red square
+      """
+      msg = { '@w' : meth }
+      for n,v in enumerate(arg):
+          msg['@%d' % n] = v
+      msg.update(kw)
+      self._lw.append(msg)
+
+  def visRobot(self,meth,*arg,**kw):
+      """
+      Add a visualization request to be plotted in the robot subplot
+      INPUT:
+        meth - str - axis method name
+        *arg,**kw - additional arguments as appropriate for the visualilzation method
+
+      NOTE: coordinates should be given in arena coordinates,
+        i.e. with respect to the true world frame used to give
+        the reference locations of the markers
+      """
+      msg = { '@r' : meth }
+      for n,v in enumerate(arg):
+          msg['@%d' % n] = v
+      msg.update(kw)
+      self._lr.append(msg)
 
   def refreshState( self ):
     """<<pure>> refresh the value of self.tagPos and self.laserAxis"""
@@ -124,7 +186,7 @@ class RobotSimInterface( object ):
     state = { ROBOT_TAGID[0] : self.tagPos }
     state.update( self.waypoints )
     # Combine all into a list
-    msg = tags2list(state) + self._msg
+    msg = tags2list(state) + self._msg + self._lw + self._lr
     # Serialize
     return json_dumps(msg)
 
@@ -140,19 +202,21 @@ class RobotSimInterface( object ):
     if any(isnan(x)):
         return "Laser: <<DISQUALIFIED>>"
     if self.out:
-      self.out.write("%.2f, 1, %d, %d\n" % (now,n+1,x[0],x[1]))
+      self.out.write("%.2f, 1, %d, %d\n" % (now,x[0],x[1]))
     return "Laser: %d,%d " % tuple(x)
 
 class ScorpionRobotSim( RobotSimInterface ):
     def __init__(self, app=None, *args, **kw):
         RobotSimInterface.__init__(self, *args, **kw)
         self.dNoise = 0.1 # Distance noise
+        self.aNoise = 0.02 # Angle noise
         self.lNoise = 0.01 # Laser pointing noise
         # Model the tag
         tag = dot(self.tagPos,[1,1j])
         self.zTag = tag-mean(tag)
         self.pos = mean(tag)
         self.ang = 1+0j
+        self.tang = 1+0j
 
     def move(self, localNS, angle, speed, dist):
         if localNS == True:
@@ -167,8 +231,31 @@ class ScorpionRobotSim( RobotSimInterface ):
         tag = self.zTag * self.ang + self.pos
         # New tag position is set by position and angle
         self.tagPos = c_[tag.real,tag.imag]
-        # Laser points along tag axis
-        self.laserAxis = dot([[1,1,0,0],[0,0,1,1]],self.tagPos)/2
-        # Add some axis error in direction perpendicular to axis
-        ax = dot(dot([1,-1],self.laserAxis),[1,1j]) * self.lNoise * 1j * randn()
-        self.laserAxis[1] = self.laserAxis[1] + [ax.real,ax.imag]
+        # Laser axis is based on tag and turret
+        c = mean(tag) # center
+        r = mean(abs(tag-c))
+        ax = self.ang/self.tang*-1j
+        self.laserAxis = [
+            [c.real,c.imag],[(c+ax).real, (c+ax).imag]
+        ]
+        ## Example of visualization API
+        # Visualize laser
+        vl = c + asarray([0,ax*100*r])
+        # Start a new visual in robot subplot
+        self.visRobotClear()
+        # plot command in robot subplot,
+        #   '~' prefix changes coordinates using homography
+        self.visRobot('~plot',
+            [int(v) for v in vl.real],
+            [int(v) for v in vl.imag],
+            c='g')
+        # Start a new visual in arena subplot
+        self.visArenaClear()
+        # plot command in arena subplot,
+        #   '~' prefix changes coordinates using homography
+        self.visArena('~plot',
+            [int(v) for v in vl.real],
+            [int(v) for v in vl.imag],
+            c='g',alpha=0.5)
+        # We can call any plot axis class methods, e.g. grid
+        self.visArena('grid',1)
