@@ -1,0 +1,8 @@
+scorpionMasterControl imports from robotSimIX and waypointShared to setup the sensor and waypoint data, sets up the arena
+
+scorpionPlans contains the plans we used to create our autonomous movement
+
+scorpionReIX translated the key presses that moved the simulated robot into moving the motors of the physical robot
+
+scorpionSimIX is the mapped events for the simulated robot. Creates translational movement using the arrow keys and 'A' to start 
+autonomous mode

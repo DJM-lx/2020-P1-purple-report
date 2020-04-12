@@ -1,0 +1,26 @@
+Hands on Robotics 2020 P1 Purple Team
+
+Madi DeVore, David Marsh, Matt Maurer, Christian Soto, Ragav Subramanian
+
+Steps to run the software:
+
+1. Start waypointShared.py in your VM
+
+2. Open a terminal in the correct folder
+
+3. Run "python3 scorpionMasterControl.py" to start the simulation
+
+4. Use the control scheme described below to move the robot and start autonomous mode 
+
+
+Control Scheme:
+
+Left arrow: moves the simulated robot to the left
+
+Right arrow: moves the simulated robot to the right
+
+Up arrow: moves the simulated robot forward
+
+Down arrow: moves the simulated robot backwards
+
+'A' : starts autonomous mode assuming you are currently at the first waypoint
