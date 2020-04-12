@@ -4,6 +4,8 @@ This file contains all the necessary resources to reproduce our project for P1-2
 
 COPYRIGHT.txt - A copyright provision detailing the allowed use of our project resources
 
+2020-P1-Purple-photo.png - photo of the team
+
 2020-P1-purple-team-resources.pdf - a compiled list of resources that guided us in the brainstorming phase
 
 2020-P1-purple-brainstorming.pdf - A PDF of our initial brainstorming presentation given at the beginning of the project cycle
